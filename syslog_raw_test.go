@@ -30,6 +30,33 @@ var _ = Describe("SyslogRaw", func() {
 		})
 	})
 
+	Context("TCP with pool size", func() {
+		var server *Server
+		var syslogClient io.WriteCloser
+		BeforeEach(func() {
+			var err error
+			server = NewServer("tcp")
+			syslogClient, err = syslog.NewWriter(server.URL + "?pool_size=2")
+			Expect(err).ToNot(HaveOccurred())
+
+		})
+		AfterEach(func() {
+			syslogClient.Close()
+			server.Close()
+		})
+		It("should pass to server the content", func() {
+			Expect(syslogClient).To(BeAssignableToTypeOf(&syslog.WriterPool{}))
+			syslogClient.Write([]byte("my content"))
+			Eventually(server.BufferResp.String).Should(Equal("my content"))
+			syslogClient.Write([]byte("my content"))
+			Eventually(server.BufferResp.String).Should(Equal("my content"))
+			syslogClient.Write([]byte("my content"))
+			Eventually(server.BufferResp.String).Should(Equal("my content"))
+			syslogClient.Write([]byte("my content"))
+			Eventually(server.BufferResp.String).Should(Equal("my content"))
+		})
+	})
+
 	Context("HTTP server", func() {
 		var server *Server
 		var syslogClient io.WriteCloser

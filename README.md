@@ -24,12 +24,14 @@ func main() {
 	"https://my.http.server.com/receive?in_gzip=true",
 	// in tcp mode
 	"tcp://my.syslog.server.com:514",
-	// in udp mode
-	"udp://my.syslog.server.com:514",
+	// in tcp mode with a pool of 10 connections (there is no pool by default)
+    "tcp://my.syslog.server.com:514?pool_size=10",
 	// tcp over tls without verifying server certificate (not recommended)
 	"tcp+tls://my.syslog.server.com:514?verify=false",
 	// tcp over tls with verifying server certificate
 	"tcp+tls://my.syslog.server.com:514?cert=path/to/a/ca/file",
+	// in udp mode
+    "udp://my.syslog.server.com:514",
     )
 	if err != nil {
         panic(err)

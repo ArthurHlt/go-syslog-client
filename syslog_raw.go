@@ -31,10 +31,6 @@ type serverConn interface {
 	close() error
 }
 
-type netConn struct {
-	conn net.Conn
-}
-
 func NewWriter(addresses ...string) (io.WriteCloser, error) {
 	if len(addresses) == 0 {
 		return nil, fmt.Errorf("One address must be given")
@@ -54,7 +50,22 @@ func NewWriter(addresses ...string) (io.WriteCloser, error) {
 		return HttpDial(addr)
 	}
 
-	return Dial(addr)
+	if u.Scheme == "udp" {
+		return Dial(addr)
+	}
+
+	poolSizeQuery := u.Query().Get("pool_size")
+	if poolSizeQuery == "" {
+		return Dial(addr)
+	}
+	poolSize, err := strconv.Atoi(poolSizeQuery)
+	if err != nil {
+		return nil, fmt.Errorf("pool_size must be an integer")
+	}
+	if poolSize < 1 {
+		return nil, fmt.Errorf("pool_size must be greater than 0")
+	}
+	return NewWriterPool(poolSize, addr)
 }
 
 func Dial(addr string) (*Writer, error) {
@@ -219,6 +230,10 @@ func (w *Writer) Close() error {
 		return err
 	}
 	return nil
+}
+
+type netConn struct {
+	conn net.Conn
 }
 
 func (n *netConn) writeString(mes string) error {
