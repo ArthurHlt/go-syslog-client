@@ -46,12 +46,7 @@ var _ = Describe("SyslogRaw", func() {
 		})
 		It("should pass to server the content", func() {
 			Expect(syslogClient).To(BeAssignableToTypeOf(&syslog.WriterPool{}))
-			syslogClient.Write([]byte("my content"))
-			Eventually(server.BufferResp.String).Should(Equal("my content"))
-			syslogClient.Write([]byte("my content"))
-			Eventually(server.BufferResp.String).Should(Equal("my content"))
-			syslogClient.Write([]byte("my content"))
-			Eventually(server.BufferResp.String).Should(Equal("my content"))
+
 			syslogClient.Write([]byte("my content"))
 			Eventually(server.BufferResp.String).Should(Equal("my content"))
 		})
